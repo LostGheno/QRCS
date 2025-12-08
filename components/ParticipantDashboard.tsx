@@ -11,7 +11,7 @@ type UserProfile = {
   role: string;
 }
 
-export default function Dashboard({ profile }: { profile: UserProfile }) {
+export default function ParticipantDashboard({ profile }: { profile: UserProfile }) {
   const qrRef = useRef<HTMLDivElement>(null);
 
   // Function to download the QR Code
