@@ -7,6 +7,8 @@ import {
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
+import CreateEventModal from "./CreateEventModal";
+import SignOutButton from "./SignOutButton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -92,18 +94,9 @@ export default function OrganizerDashboard({ profile }: { profile: UserProfile }
         </nav>
 
         {/* User Mini Profile */}
-        <div className="p-4 border-t border-gray-200 dark:border-gray-800">
-            <div className="flex items-center gap-3">
-                <Avatar className="h-9 w-9 border border-gray-200 dark:border-gray-700">
-                    <AvatarFallback className="bg-gradient-to-tr from-purple-500 to-indigo-400 text-white font-bold">
-                        {profile.full_name.charAt(0)}
-                    </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{profile.full_name}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">Organizer</p>
-                </div>
-            </div>
+        <div className="mt-auto p-4 border-t border-gray-200 dark:border-gray-800">
+    {/* Pass the profile data to the button now! */}
+            <SignOutButton profile={profile} />
         </div>
       </aside>
 
@@ -120,9 +113,9 @@ export default function OrganizerDashboard({ profile }: { profile: UserProfile }
                 <Button variant="outline" className="gap-2 hidden sm:flex">
                     <FileDown className="w-4 h-4" /> Export Report
                 </Button>
-                <Button className="gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 transition-opacity">
-                    <Plus className="w-4 h-4" /> Create New Event
-                </Button>
+                
+                <CreateEventModal />
+                
             </div>
         </header>
 
