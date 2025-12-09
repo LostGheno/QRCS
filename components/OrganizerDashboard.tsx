@@ -1,20 +1,20 @@
 'use client'
 
-import { 
-  Card, CardContent, CardDescription, CardHeader, CardTitle 
-} from "@/components/ui/card";
+import { useState } from "react"; 
+import { toast } from "sonner"; 
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import CreateEventModal from "./CreateEventModal";
-import SignOutButton from "./SignOutButton";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   PieChart, Pie, Cell 
 } from 'recharts';
 import { 
-  Users, QrCode, CalendarDays, TrendingUp, FileDown, Activity, Bell
+  Users, QrCode, CalendarDays, TrendingUp, FileDown, Activity, Bell, Loader2
 } from "lucide-react";
+import OrganizerSidebar from "./OrganizerSidebar"; 
+import { exportAttendanceData } from "@/app/actions/export"; 
 
 // --- TYPES ---
 export type DashboardStats = {
@@ -34,7 +34,33 @@ type UserProfile = {
 }
 
 export default function OrganizerDashboard({ profile, stats }: { profile: UserProfile, stats: DashboardStats }) {
-  
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async () => {
+    setExporting(true);
+    toast.info("Preparing export...");
+
+    const result = await exportAttendanceData();
+
+    if (result.success && result.csv) {
+      // Create a blob and trigger download
+      const blob = new Blob([result.csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `vscan-export-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast.success("Export downloaded successfully!");
+    } else {
+      toast.error(result.error || "Failed to export data");
+    }
+    setExporting(false);
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-[#0a0a0a] transition-colors duration-300 relative overflow-hidden">
       
@@ -44,40 +70,7 @@ export default function OrganizerDashboard({ profile, stats }: { profile: UserPr
         <div className="absolute bottom-[10%] left-[-10%] w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-[100px]" />
       </div>
 
-      {/* SIDEBAR - Now with Glassmorphism */}
-      <aside className="hidden lg:flex flex-col w-72 bg-white/80 dark:bg-[#111]/80 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-800/50 h-screen fixed top-0 left-0 z-30">
-        <div className="p-8 flex items-center gap-4">
-           <div className="grid grid-cols-2 gap-1 w-10 h-10 shadow-lg shadow-purple-500/20 rounded-lg p-1 bg-white dark:bg-black/50">
-               <div className="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-sm"></div>
-               <div className="border-2 border-purple-500 rounded-sm"></div>
-               <div className="bg-purple-500/50 rounded-sm"></div>
-               <div className="bg-gradient-to-tl from-cyan-400 to-blue-500 rounded-sm"></div>
-          </div>
-          <span className="text-2xl font-black tracking-tight bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
-            VSCAN
-          </span>
-        </div>
-
-        <nav className="flex-1 px-6 space-y-3 mt-4">
-          <Button variant="secondary" className="w-full justify-start h-12 gap-4 bg-gradient-to-r from-purple-50 to-white dark:from-purple-900/20 dark:to-transparent border border-purple-100 dark:border-purple-900/30 text-purple-700 dark:text-purple-300 font-semibold shadow-sm">
-            <CalendarDays className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-            Dashboard
-          </Button>
-          <Button variant="ghost" className="w-full justify-start h-12 gap-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-all">
-            <QrCode className="w-5 h-5" />
-            Manage Events
-          </Button>
-          <Button variant="ghost" className="w-full justify-start h-12 gap-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-all">
-            <Users className="w-5 h-5" />
-            Attendees
-          </Button>
-        </nav>
-
-        {/* User Profile */}
-        <div className="mt-auto p-6 border-t border-gray-200/50 dark:border-gray-800/50 bg-gray-50/50 dark:bg-black/20">
-            <SignOutButton profile={profile} />
-        </div>
-      </aside>
+      <OrganizerSidebar profile={profile} />
 
       {/* MAIN CONTENT */}
       <main className="flex-1 lg:ml-72 p-6 lg:p-10 space-y-10 relative z-10">
@@ -89,17 +82,25 @@ export default function OrganizerDashboard({ profile, stats }: { profile: UserPr
                 <p className="text-gray-500 dark:text-gray-400 mt-1 font-medium">Real-time overview & analytics.</p>
             </div>
             <div className="flex items-center gap-3">
-                <Button variant="outline" className="gap-2 h-11 hidden sm:flex bg-white/50 dark:bg-black/50 border-gray-200 dark:border-gray-800 backdrop-blur-sm hover:bg-white dark:hover:bg-black transition-all">
-                    <FileDown className="w-4 h-4" /> Export
+                <Button 
+                    variant="outline" 
+                    onClick={handleExport}
+                    disabled={exporting}
+                    className="gap-2 h-11 hidden sm:flex bg-white/50 dark:bg-black/50 border-gray-200 dark:border-gray-800 backdrop-blur-sm hover:bg-white dark:hover:bg-black transition-all"
+                >
+                    {exporting ? (
+                        <Loader2 className="w-4 h-4 animate-spin" /> 
+                    ) : (
+                        <FileDown className="w-4 h-4" /> 
+                    )}
+                    {exporting ? "Exporting..." : "Export"}
                 </Button>
                 <CreateEventModal />
             </div>
         </header>
 
-        {/* 1. STATS ROW - Vibrant Cards */}
+        {/* 1. STATS ROW */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            
-            {/* Total Scans - Purple Theme */}
             <Card className="border-0 shadow-lg shadow-purple-500/5 bg-gradient-to-br from-white to-purple-50/50 dark:from-[#151515] dark:to-purple-900/10 overflow-hidden relative group">
                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity transform group-hover:scale-110 duration-500">
                     <Users className="w-24 h-24 text-purple-600" />
@@ -113,7 +114,6 @@ export default function OrganizerDashboard({ profile, stats }: { profile: UserPr
                 </CardContent>
             </Card>
             
-            {/* Active Now - Green/Cyan Theme */}
             <Card className="border-0 shadow-lg shadow-cyan-500/5 bg-gradient-to-br from-white to-cyan-50/50 dark:from-[#151515] dark:to-cyan-900/10 overflow-hidden relative group">
                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity transform group-hover:scale-110 duration-500">
                     <TrendingUp className="w-24 h-24 text-cyan-600" />
@@ -132,8 +132,7 @@ export default function OrganizerDashboard({ profile, stats }: { profile: UserPr
                     </div>
                 </CardContent>
             </Card>
-            
-            {/* Events - Blue Theme */}
+
             <Card className="border-0 shadow-lg shadow-blue-500/5 bg-gradient-to-br from-white to-blue-50/50 dark:from-[#151515] dark:to-blue-900/10 overflow-hidden relative group">
                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity transform group-hover:scale-110 duration-500">
                     <CalendarDays className="w-24 h-24 text-blue-600" />
@@ -147,7 +146,6 @@ export default function OrganizerDashboard({ profile, stats }: { profile: UserPr
                 </CardContent>
             </Card>
 
-            {/* Activity - Orange Theme */}
             <Card className="border-0 shadow-lg shadow-orange-500/5 bg-gradient-to-br from-white to-orange-50/50 dark:from-[#151515] dark:to-orange-900/10 overflow-hidden relative group">
                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity transform group-hover:scale-110 duration-500">
                     <Activity className="w-24 h-24 text-orange-600" />
@@ -162,7 +160,7 @@ export default function OrganizerDashboard({ profile, stats }: { profile: UserPr
             </Card>
         </div>
 
-        {/* 2. CHARTS ROW - Clean & Minimal */}
+        {/* 2. CHARTS ROW */}
         <div className="grid grid-cols-1 lg:grid-cols-7 gap-8">
             
             {/* Trend Chart */}
@@ -246,7 +244,7 @@ export default function OrganizerDashboard({ profile, stats }: { profile: UserPr
         {/* 3. BOTTOM ROW */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
-            {/* SCANNER CARD - Now a Glowing Feature */}
+            {/* SCANNER CARD */}
             <Link href="/scan" className="block h-full group">
                 <div className="h-full bg-black rounded-2xl p-8 text-white relative overflow-hidden border border-gray-800 hover:border-purple-500/50 transition-all shadow-2xl group-hover:shadow-purple-500/20">
                     {/* Background Animation */}
@@ -277,7 +275,7 @@ export default function OrganizerDashboard({ profile, stats }: { profile: UserPr
                 </div>
             </Link>
 
-            {/* Notifications - Clean Look */}
+            {/* Notifications */}
             <Card className="border-0 shadow-xl bg-white/50 dark:bg-[#111]/50 backdrop-blur-md h-full">
                 <CardHeader>
                     <div className="flex items-center justify-between">
