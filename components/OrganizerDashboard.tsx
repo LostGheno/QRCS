@@ -7,6 +7,7 @@ import {
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
+import Link from "next/link";
 import CreateEventModal from "./CreateEventModal";
 import SignOutButton from "./SignOutButton";
 import { Button } from "@/components/ui/button";
@@ -115,7 +116,7 @@ export default function OrganizerDashboard({ profile }: { profile: UserProfile }
                 </Button>
                 
                 <CreateEventModal />
-                
+
             </div>
         </header>
 
@@ -256,32 +257,28 @@ export default function OrganizerDashboard({ profile }: { profile: UserProfile }
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
             {/* Quick Actions */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Quick Actions</CardTitle>
-                    <CardDescription>Common organizer tasks</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                    <Button variant="outline" className="w-full justify-start h-12 gap-3 text-base font-normal">
-                        <div className="w-8 h-8 rounded-full bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center text-cyan-600">
-                            <QrCode className="w-4 h-4" />
+<Link href="/scan" className="block h-full">
+                <div className="h-full bg-gradient-to-br from-gray-900 to-black rounded-xl p-8 text-white relative overflow-hidden group cursor-pointer border border-gray-800 hover:border-purple-500/50 transition-all shadow-lg">
+                    {/* Glowing Effect */}
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-purple-600 rounded-full blur-[100px] opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                    
+                    <div className="relative z-10 flex flex-col h-full justify-between">
+                        <div>
+                            <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-sm">
+                                <QrCode className="w-7 h-7 text-purple-400" />
+                            </div>
+                            <h3 className="text-2xl font-bold mb-2">Scan QR Codes</h3>
+                            <p className="text-gray-400 mb-8 max-w-sm">
+                                Open the camera to scan attendee tickets and automatically mark them as present.
+                            </p>
                         </div>
-                        Generate QR Codes for Bulk Users
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start h-12 gap-3 text-base font-normal">
-                        <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600">
-                            <Users className="w-4 h-4" />
+                        
+                        <div className="flex items-center gap-2 text-purple-300 font-semibold group-hover:translate-x-2 transition-transform">
+                            Launch Scanner <span className="text-xl">→</span>
                         </div>
-                        Assign Scanners to Event
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start h-12 gap-3 text-base font-normal">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">
-                            <FileDown className="w-4 h-4" />
-                        </div>
-                        Export Monthly Report
-                    </Button>
-                </CardContent>
-            </Card>
+                    </div>
+                </div>
+            </Link>
 
             {/* Recent Notifications */}
             <Card>
