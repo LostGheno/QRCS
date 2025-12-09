@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { Calendar, MapPin, Upload, X, Loader2, Plus, Sparkles, Image as ImageIcon } from "lucide-react"
+import { Calendar, MapPin, Upload, Loader2, Plus, Sparkles, Image as ImageIcon } from "lucide-react"
 import { createEvent } from '@/app/actions/createEvent'
 
 export default function CreateEventModal() {
@@ -139,7 +139,7 @@ export default function CreateEventModal() {
 
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label className="text-xs font-bold uppercase tracking-wide text-gray-500">Date & Time</Label>
+                    <Label className="text-xs font-bold uppercase tracking-wide text-gray-500">Start Time</Label>
                     <div className="relative">
                         <Calendar className="absolute left-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
                         <Input 
@@ -150,17 +150,33 @@ export default function CreateEventModal() {
                         />
                     </div>
                 </div>
+                
+                {/* NEW: End Time Input */}
                 <div className="space-y-2">
-                    <Label className="text-xs font-bold uppercase tracking-wide text-gray-500">Location</Label>
+                    <Label className="text-xs font-bold uppercase tracking-wide text-gray-500">End Time</Label>
                     <div className="relative">
-                        <MapPin className="absolute left-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                        <Calendar className="absolute left-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
                         <Input 
-                            name="location" 
-                            placeholder="Venue..." 
+                            name="end_time" 
+                            type="datetime-local" 
                             required 
                             className="pl-10 h-11 bg-white dark:bg-black/20 border-gray-200 dark:border-gray-800 focus:border-purple-500"
                         />
                     </div>
+                </div>
+            </div>
+
+            {/* Location Input (Moved out of the grid to be full width) */}
+            <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase tracking-wide text-gray-500">Location</Label>
+                <div className="relative">
+                    <MapPin className="absolute left-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                    <Input 
+                        name="location" 
+                        placeholder="Venue..." 
+                        required 
+                        className="pl-10 h-11 bg-white dark:bg-black/20 border-gray-200 dark:border-gray-800 focus:border-purple-500"
+                    />
                 </div>
             </div>
 
