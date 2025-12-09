@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, MapPin, ArrowRight, Clock, CalendarDays, FilterX, LogIn, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import ManualCheckInModal from "./ManualCheckInModal"
 
 // Type Definition matching your new DB schema
 type AttendeeRecord = {
@@ -28,13 +29,24 @@ type AttendeeRecord = {
   } | null
 }
 
-export default function AttendeesList({ initialData }: { initialData: AttendeeRecord[] }) {
+// 1. UPDATE: Accept 'events' prop here
+export default function AttendeesList({ 
+  initialData, 
+  events 
+}: { 
+  initialData: AttendeeRecord[], 
+  events: { id: string, title: string }[] 
+}) {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [eventFilter, setEventFilter] = useState("all")
 
-  // 1. Extract Unique Events for the Filter Dropdown
-  const uniqueEvents = useMemo(() => {
+  // Use the passed 'events' prop for the dropdown, or derive unique ones if preferred.
+  // Using the passed prop ensures we see ALL events, even those with 0 attendees.
+  const filterOptions = useMemo(() => {
+    if (events && events.length > 0) return events;
+    
+    // Fallback to deriving from data if prop is empty (safety check)
     const eventsMap = new Map();
     initialData.forEach(item => {
       if (item.events) {
@@ -42,7 +54,7 @@ export default function AttendeesList({ initialData }: { initialData: AttendeeRe
       }
     });
     return Array.from(eventsMap.entries()).map(([id, title]) => ({ id, title }));
-  }, [initialData]);
+  }, [initialData, events]);
 
   // 2. Filter Logic
   const filteredAttendees = initialData.filter(record => {
@@ -94,19 +106,22 @@ export default function AttendeesList({ initialData }: { initialData: AttendeeRe
         
         <div className="flex flex-col sm:flex-row gap-2">
             
+            {/* 2. UPDATE: Add Manual Check-in Button Here */}
+            <ManualCheckInModal events={events} />
+
             {/* Event Filter */}
             <Select value={eventFilter} onValueChange={setEventFilter}>
                 <SelectTrigger className="w-full sm:w-[200px] h-11 border-0 bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-800 focus:ring-0 rounded-xl transition-colors">
                     <div className="flex items-center gap-2 truncate">
                         <CalendarDays className="w-4 h-4 text-gray-500" />
                         <span className="truncate text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {eventFilter === 'all' ? 'All Events' : uniqueEvents.find(e => e.id === eventFilter)?.title}
+                            {eventFilter === 'all' ? 'All Events' : filterOptions.find(e => e.id === eventFilter)?.title}
                         </span>
                     </div>
                 </SelectTrigger>
                 <SelectContent>
                     <SelectItem value="all">All Events</SelectItem>
-                    {uniqueEvents.map(event => (
+                    {filterOptions.map(event => (
                         <SelectItem key={event.id} value={event.id}>{event.title}</SelectItem>
                     ))}
                 </SelectContent>
